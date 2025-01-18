@@ -22,5 +22,5 @@ def setup_domain_config(set_common_utils):
 def create_driver(setup_domain_config):
     driver = BaseService.create_driver()
     BaseService.visit_domain(create_driver, setup_domain_config.get("trello_url", "trello_url"))
-    yield
+    yield driver
     driver.quit()
