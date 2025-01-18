@@ -1,36 +1,26 @@
 import pytest
-from selenium import webdriver
-from page_services.page_service import Service
+from common.common_utils import CommonUtils
+from page_services.base_service import BaseService
+
 
 @pytest.fixture(scope="session")
-def setup_browser():
-        
-    driver = webdriver.Firefox()
-    A = Service(driver)
-    A.login("https://trello.com/login", "lesterjack93@yahoo.com.tw", "trello0968141018")
-    A.into_workspace()
+def set_common_utils():
+    return CommonUtils()
 
-    yield driver
 
+@pytest.fixture(scope='session', autouse=True)
+def setup_account_config(set_common_utils):
+    return set_common_utils.get_account()
+
+
+@pytest.fixture(scope='session', autouse=True)
+def setup_domain_config(set_common_utils):
+    return set_common_utils.get_domain()
+
+
+@pytest.fixture(scope="session")
+def create_driver(setup_domain_config):
+    driver = BaseService.create_driver()
+    BaseService.visit_domain(create_driver, setup_domain_config.get("trello_url", "trello_url"))
+    yield
     driver.quit()
-
-@pytest.fixture(scope="function")
-def setup_board(setup_browser):
-        
-    A = Service(setup_browser)
-    A.create_board("測試用看板1")
-    A.wait_element_loading('create_list_button')
-    A.into_workspace()
-
-    yield setup_browser
-
-@pytest.fixture(scope="function")
-def setup_list(setup_browser):
-        
-    A = Service(setup_browser)
-    A.into_board("測試用看板2")
-    A.create_list("測試用列表")
-    
-    yield setup_browser
-
-    A.into_workspace()

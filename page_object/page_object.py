@@ -1,69 +1,8 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
-import time
+from page_object.base_page import Basepage
 
-
-#-------------------------------------------------------------------------------------------------------------
-#element會用到的功能
-class CustomTimeoutException(Exception):
-    
-    def __init__(self, message):
-        super().__init__(message)
-
-class Basepage:
-    
-    def __init__(self,driver):  
-        self.driver = driver
-          
-    def find_ele_after_visible(self,xpath,ele_name,timelimit = 10):
-        try:
-            element = WebDriverWait(self.driver, timelimit).until(EC.visibility_of_element_located((By.XPATH, xpath)))
-    
-            if element:
-                return element
-            element = WebDriverWait(self.driver, timelimit).until(EC.presence_of_element_located((By.XPATH, xpath)))
-    
-            if element:
-                self.driver.execute_script('arguments[0].scrollIntoView({ block: "center", inline: "center" });', element)
-                element = WebDriverWait(self.driver, timelimit).until(EC.visibility_of_element_located((By.XPATH, xpath)))
-                return element
-        except TimeoutException:
-            raise CustomTimeoutException(f"Element [{ele_name}]was unvisiable within {timelimit} seconds.")
-        
-
-    def find_ele_after_clickable(self,xpath,ele_name,timelimit = 10):
-        try:
-            element = WebDriverWait(self.driver, timelimit).until(EC.element_to_be_clickable((By.XPATH, xpath)))
-    
-            if element:
-                return element
-            element = WebDriverWait(self.driver, timelimit).until(EC.presence_of_element_located((By.XPATH, xpath)))
-    
-            if element:
-                self.driver.execute_script('arguments[0].scrollIntoView({ block: "center", inline: "center" });', element)
-                element = WebDriverWait(self.driver, timelimit).until(EC.element_to_be_clickable((By.XPATH, xpath)))
-                return element
-        except TimeoutException:
-            raise CustomTimeoutException(f"Element [{ele_name}]was unclickable within {timelimit} seconds.")
-        
-    def find_ele_after_presence(self,xpath,ele_name,timelimit = 10):
-        try:
-            element = WebDriverWait(self.driver, timelimit).until(EC.presence_of_element_located((By.XPATH, xpath)))
-
-            if element:
-                return element
-        except TimeoutException:
-            raise CustomTimeoutException(f"Element [{ele_name}]was not presence within {timelimit} seconds.")
-
-     
- 
-#--------------------------------------------------------------------------------------------------------------------------------
 #定位器
-trello_page_locator = {  
+trello_page_locator = {
     #輸入信箱的地方
     'input_email':'//*[@id="username"]',
     #輸入密碼的地方
@@ -146,24 +85,24 @@ trello_page_locator = {
     'create_checklist_submit':'//button[contains(@class,"HwRbvTPVxzo9OE bxgKMAm3lq5BpA SEj5vUdI3VvxDc")]',
     #該死的跳出式菜單關閉按鈕
     'board_menu_close_button':'//button[contains(@data-testid,"board-menu-close-button")]'
-    
+
 }
 
 #-------------------------------------------------------------------------------------------------------------------
 #operator
 class Operator(Basepage):
-    
+
     def __init__(self,driver):
         super().__init__(driver)
         self.locator = trello_page_locator
-    
+
     def click_button(self,element_name,**kwargs):
         xpath_template = self.locator[element_name]
         try:
             xpath = xpath_template.format(**kwargs)
         except:
             xpath = xpath_template
-   
+
         button_to_click = self.find_ele_after_clickable(xpath, element_name)
         button_to_click.click()
 
@@ -175,7 +114,7 @@ class Operator(Basepage):
             xpath = xpath_template
         text_area = self.find_ele_after_visible(xpath,element_name)
         text_area.send_keys(text_to_send)
-       
+
     def move_mouse_to_element(self,element_name,**kwargs):
         xpath_template = self.locator[element_name]
         try:
@@ -185,7 +124,7 @@ class Operator(Basepage):
         element = self.find_ele_after_presence(xpath,element_name)
         mouse = ActionChains(self.driver)
         mouse.move_to_element(element).perform()
-    
+
     def check_element_existence(self, element_name,**kwargs):
         xpath_template = self.locator[element_name]
         try:
@@ -197,7 +136,7 @@ class Operator(Basepage):
             return True
         except CustomTimeoutException:
             return False
-        
+
     def wait_element_visible(self,element_name,**kwargs):
         xpath_template = self.locator[element_name]
         try:
@@ -205,5 +144,4 @@ class Operator(Basepage):
         except:
             xpath = xpath_template
         self.find_ele_after_visible(xpath,element_name)
-        
-        
+
